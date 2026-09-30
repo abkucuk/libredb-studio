@@ -564,7 +564,11 @@ function parseADONetString(input: string): ParsedConnection | null {
     });
 
     const host = params["server"] || params["data source"] || "localhost";
-    const [hostPart, portPart] = host.split(",");
+    // SqlClient accepts a protocol prefix on the server, and the Azure portal always
+    // writes one (`tcp:<server>.database.windows.net,1433`). tedious resolves the value
+    // as a hostname, so a kept prefix fails as ENOTFOUND. TCP is the only protocol
+    // tedious speaks, so `tcp:` is the only prefix there is to drop.
+    const [hostPart, portPart] = host.replace(/^tcp:/i, "").split(",");
 
     return {
       type: "mssql",
