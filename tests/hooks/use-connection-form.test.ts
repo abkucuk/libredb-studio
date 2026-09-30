@@ -2764,6 +2764,24 @@ describe("useConnectionForm", () => {
     expect(result.current.password).toBe("");
   });
 
+  // #1211: tedious reaches SQL Server over TCP only, so an np:/lpc: server cannot be honoured.
+  test("handlePasteConnectionString warns instead of filling host from a named-pipes server", () => {
+    const { result } = renderHook(() => useConnectionForm(defaultProps));
+
+    act(() => {
+      result.current.setPasteInput("Server=np:myserver;Database=mydb;");
+    });
+    act(() => {
+      result.current.handlePasteConnectionString();
+    });
+
+    expect(result.current.type).toBe("mssql");
+    expect(result.current.testResult!.tone).toBe("warning");
+    expect(result.current.testResult!.message).toContain('"np:"');
+    expect(result.current.host).toBe("localhost");
+    expect(result.current.database).toBe("mydb");
+  });
+
   // #842: AWS DocumentDB's own console gives out `tlsCAFile=global-bundle.pem`, a path on
   // the machine that pasted it, not the one running the server process.
   test("handlePasteConnectionString warns when a MongoDB URI carries a file-path TLS parameter", () => {

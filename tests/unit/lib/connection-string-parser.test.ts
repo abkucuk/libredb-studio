@@ -671,6 +671,21 @@ describe("parseConnectionString", () => {
       expect(parseConnectionString("Server=tcp-gateway,1433;")!.host).toBe("tcp-gateway");
     });
 
+    test("reports a named-pipes server instead of writing it into host", () => {
+      const result = parseConnectionString("Server=np:myserver;Database=mydb;User Id=sa;");
+      expect(result!.host).toBeUndefined();
+      expect(result!.port).toBeUndefined();
+      expect(result!.unsupportedServerProtocol).toBe("np");
+      expect(result!.database).toBe("mydb");
+      expect(result!.user).toBe("sa");
+    });
+
+    test("reports a shared-memory server, keeping the prefix as it was pasted", () => {
+      const result = parseConnectionString("Server=LPC:myserver;");
+      expect(result!.host).toBeUndefined();
+      expect(result!.unsupportedServerProtocol).toBe("LPC");
+    });
+
     test("handles Data Source alias", () => {
       const result = parseConnectionString("Data Source=db-host,1450;Database=app;");
       // "Data Source=..." starts with "Data", not "Server", so it won't match /^Server\s*=/i

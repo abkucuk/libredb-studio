@@ -793,6 +793,15 @@ export function useConnectionForm({ isOpen, onConnect, editConnection, onTestCon
       });
       return;
     }
+    // tedious reaches SQL Server over TCP only (#1211), so a named-pipes or shared-memory
+    // server was not written into Host; the form keeps the host it had.
+    if (parsed.unsupportedServerProtocol) {
+      setTestResult({
+        tone: "warning",
+        message: `Server not applied: "${parsed.unsupportedServerProtocol}:" is a SQL Server protocol this connection cannot use, because it connects over TCP only. The other fields were filled in. Enter the server's host name and TCP port in Host / Port.`,
+      });
+      return;
+    }
     // A file-path TLS parameter (#842) is read on the machine running the server, which in
     // a container is not the one the string was pasted on. It stays in the URI, and a CA
     // pasted into the form wins over it (see connection-string-parser.ts).
