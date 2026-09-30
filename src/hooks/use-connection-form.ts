@@ -757,7 +757,11 @@ export function useConnectionForm({ isOpen, onConnect, editConnection, onTestCon
     // Auto-switch DB type
     setType(parsed.type);
     if (parsed.host) setHost(parsed.host);
-    if (parsed.port) setPort(parsed.port);
+    // A parse with no port (an np:/lpc: server, #1211) still switched the type above, so
+    // the port is that type's default, as the type buttons in ConnectionModal set it,
+    // rather than the previous engine's.
+    const port = parsed.port || getDBConfig(parsed.type).defaultPort;
+    if (port) setPort(port);
     if (parsed.user) setUser(parsed.user);
     if (parsed.password) setPassword(parsed.password);
     if (parsed.database) setDatabase(parsed.database);

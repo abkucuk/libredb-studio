@@ -16,6 +16,7 @@ const DEFAULT_PORTS: Record<string, string> = {
   redis: "6379",
   couchbase: "8091",
   kafka: "9092",
+  mssql: "1433",
 };
 
 // The engines whose addressing fields diverge from the networked default. Spelled out
@@ -2779,6 +2780,8 @@ describe("useConnectionForm", () => {
     expect(result.current.testResult!.tone).toBe("warning");
     expect(result.current.testResult!.message).toContain('"np:"');
     expect(result.current.host).toBe("localhost");
+    // The form opened on PostgreSQL; its 5432 must not survive the switch to SQL Server.
+    expect(result.current.port).toBe("1433");
     expect(result.current.database).toBe("mydb");
   });
 
